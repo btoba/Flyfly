@@ -30,8 +30,11 @@ var Ship = function(x, y, canvas) {
 
         var speed = 5;
         if (that.moving) {
-            var newX = that.x - e.changedTouches[0].pageX,
-                newY = that.y - e.changedTouches[0].pageY;
+            var initialX = e.clientX || e.changedTouches[0].pageX;
+            var initialY = e.clientY || e.changedTouches[0].pageY;
+
+            var newX = that.x - initialX,
+                newY = that.y - initialY;
 
             that.x -= newX < 0 ? Math.max(newX, -speed) : Math.min(newX, speed);
             that.y -= newY < 0 ? Math.max(newY, -speed) : Math.min(newY, speed);
