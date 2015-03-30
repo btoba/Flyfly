@@ -1,6 +1,17 @@
 #mainCanvas {
-    
     top: 0;
     left: 0;
     border: 1px solid black;
+    position: fixed;
+    z-index: 1;
+    background: cyan;
+}
+
+#status {
+    position: fixed;
+    top: 10px;
+    left: 10px;
+    z-index: 2;
+    color: white;
+    font-weight: bold;
 }

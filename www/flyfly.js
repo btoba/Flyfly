@@ -1,8 +1,38 @@
 var FPS = 60;
 
+function areCollidingInternal(a, b) {
+    if ((a.x - a.width / 2 > b.x - b.width / 2 && // Top left
+         a.x - a.width / 2 < b.x + b.width / 2 &&
+         a.y - a.height / 2 > b.y - b.height / 2 &&
+         a.y - a.height / 2 < b.y + b.height / 2) ||
+        (a.x + a.width / 2 > b.x - b.width / 2 && // Top right
+         a.x + a.width / 2 < b.x + b.width / 2 &&
+         a.y - a.height / 2 > b.y - b.height / 2 &&
+         a.y - a.height / 2 < b.y + b.height / 2 ) ||
+        (a.x - a.width / 2 > b.x - b.width / 2 && // Bottom left
+         a.x - a.width / 2 < b.x + b.width / 2 &&
+         a.y + a.height / 2 > b.y - b.height / 2 &&
+         a.y + a.height / 2 < b.y + b.height / 2) ||
+        (a.x + a.width / 2 > b.x - b.width / 2 && // Bottom right
+         a.x + a.width / 2 < b.x + b.width / 2 &&
+         a.y + a.height / 2 > b.y - b.height / 2 &&
+         a.y + a.height / 2 < b.y + b.height / 2)) {
+        return true;
+    }
+
+    return false;
+}
+
+function areColliding(a, b) {
+    return areCollidingInternal(a, b) || areCollidingInternal(b, a);
+}
+
 var Ship = function(x, y, canvas) {
     this.x = x;
     this.y = y;
+    this.size = 150;
+    this.width = this.size;
+    this.height = this.size;
     this.dead = false;
     this.moving = false;
     this.movingIntervalId = -1;
@@ -13,8 +43,7 @@ var Ship = function(x, y, canvas) {
     this.img.src = "/img/ship.png";
 
     this.draw = function(context) {
-        var size = 150;
-        context.drawImage(this.img, this.x - size / 2, this.y - size / 2, size, size);
+        context.drawImage(this.img, this.x - this.size / 2, this.y - this.size / 2, this.size, this.size);
     }
 
     var that = this;
@@ -70,26 +99,53 @@ var Ship = function(x, y, canvas) {
     canvas.addEventListener("mousemove", this.handleMove, false);
 };
 
+var Obstacle = function(x, y, width, height) {
+    this.x = x;
+    this.y = y;
+    this.width = width;
+    this.height = height;
+    this.colission = false;
+
+    this.draw = function (ctx) {
+        ctx.fillStyle = this.collision ? "red" : "green";
+        ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
+    }
+}
+
+
+
 var mainCanvas = document.getElementById('mainCanvas');
 mainCanvas.width = document.body.clientWidth;
 mainCanvas.height = document.body.clientHeight;
 
-function Render(ship) {
+function Render(ship, obstacles) {
     var context = mainCanvas.getContext("2d");
 
     // Clear canvas
     context.clearRect(0, 0, mainCanvas.width, mainCanvas.height);
 
     ship.draw(context);
+
+    obstacles.forEach(function(e) {
+        e.draw(context);
+    })
 }
 
 // Game
 
 var ship = new Ship(10, 10, mainCanvas);
+var obstacles = [ new Obstacle(100, 250, 50, 20) ];
 
 // Game loop
 
 setInterval(function() {
-    Render(ship);
+    Render(ship, obstacles);
+
+    obstacles.forEach(function(o) {
+        if (areColliding(ship, o))
+        {
+            o.collision = true;
+        }
+    })
 }, 1000 / FPS);
 
