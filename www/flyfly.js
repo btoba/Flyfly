@@ -133,8 +133,34 @@ function Render(ship, obstacles) {
 
 // Game
 
-var ship = new Ship(10, 10, mainCanvas);
-var obstacles = [ new Obstacle(100, 250, 50, 20) ];
+var ship = new Ship(mainCanvas.width / 2, mainCanvas.height / 2, mainCanvas);
+var obstacles = [];
+
+// Create path
+function addMapSide(obstacles, centerX) {
+    var x = 100;
+    for (var i = 0; i < 50; i++) {
+        var rnd = Math.floor(5 * Math.random());
+        var size = 10;
+
+        if (rnd < 1) {
+            x += size;
+        }
+        else if (rnd > 2)
+        {
+            x -= size;
+        }
+
+        obstacles.push(new Obstacle(centerX, i * 20, x + 150, 20));
+    }
+}
+
+function createObstacled(obstacles) {
+    addMapSide(obstacles, 0);
+    addMapSide(obstacles, mainCanvas.width);
+}
+
+createObstacled(obstacles);
 
 // Game loop
 
@@ -142,10 +168,7 @@ setInterval(function() {
     Render(ship, obstacles);
 
     obstacles.forEach(function(o) {
-        if (areColliding(ship, o))
-        {
-            o.collision = true;
-        }
+        o.collision = areColliding(ship, o);
     })
 }, 1000 / FPS);
 
