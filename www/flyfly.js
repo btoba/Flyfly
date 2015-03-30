@@ -110,6 +110,10 @@ var Obstacle = function(x, y, width, height) {
         ctx.fillStyle = this.collision ? "red" : "green";
         ctx.fillRect(this.x - this.width / 2, this.y - this.height / 2, this.width, this.height);
     }
+
+    this.move = function(speed) {
+        this.y -= speed;
+    }
 }
 
 
@@ -136,31 +140,33 @@ function Render(ship, obstacles) {
 var ship = new Ship(mainCanvas.width / 2, mainCanvas.height / 2, mainCanvas);
 var obstacles = [];
 
+var xLeft = 0,
+    xRight = 0;
+
 // Create path
-function addMapSide(obstacles, centerX) {
-    var x = 100;
-    for (var i = 0; i < 50; i++) {
-        var rnd = Math.floor(5 * Math.random());
-        var size = 10;
+function addMapSliceInternal(obstacles, centerX, x, y) {
+    var rnd = Math.floor(5 * Math.random());
+    var size = 40;
 
-        if (rnd < 1) {
-            x += size;
-        }
-        else if (rnd > 2)
-        {
-            x -= size;
-        }
-
-        obstacles.push(new Obstacle(centerX, i * 20, x + 150, 20));
+    if (rnd < 2) {
+        x += size;
     }
+    else if (rnd >= 3)
+    {
+        x -= size;
+    }
+
+    x = Math.min(x, 200);
+
+    obstacles.push(new Obstacle(centerX, y, x + 150, 20));
+
+    return x;
 }
 
-function createObstacled(obstacles) {
-    addMapSide(obstacles, 0);
-    addMapSide(obstacles, mainCanvas.width);
+function addMapSlice(obstacles, right, y) {
+    xLeft = addMapSliceInternal(obstacles, 0, xLeft, y);
+    xLeft = addMapSliceInternal(obstacles, right, xRight, y);
 }
-
-createObstacled(obstacles);
 
 // Game loop
 
@@ -169,6 +175,12 @@ setInterval(function() {
 
     obstacles.forEach(function(o) {
         o.collision = areColliding(ship, o);
+        o.move(20);
     })
+
+    addMapSlice(obstacles, mainCanvas.width, mainCanvas.height);
+    if (obstacles.length > 100) {
+        obstacles.splice(0, 2);
+    }
 }, 1000 / FPS);
 
