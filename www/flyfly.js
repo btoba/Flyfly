@@ -38,6 +38,8 @@ var Ship = function(x, y, canvas) {
     this.movingIntervalId = -1;
     this.dirX = 0;
     this.dirY = 0;
+    this.hits = 0;
+    this.passed = 0;
 
     this.img = new Image();
     this.img.src = "/img/ship.png";
@@ -48,8 +50,6 @@ var Ship = function(x, y, canvas) {
 
     var that = this;
 
-    var status = document.getElementById("status");
-
     this.doMove = function () {
         var speed = 20;
         if (that.moving) {
@@ -58,8 +58,6 @@ var Ship = function(x, y, canvas) {
 
             that.x -= newX < 0 ? Math.max(newX, -speed) : Math.min(newX, speed);
             that.y -= newY < 0 ? Math.max(newY, -speed) : Math.min(newY, speed);
-
-            status.innerText = "Moving to: " + that.x + ", " + that.y;
         }
     }
 
@@ -75,7 +73,6 @@ var Ship = function(x, y, canvas) {
 
     this.handleEnd = function() {
         that.moving = false;
-        status.innerText = "Not moving";
 
         // Stop following the finger
         if (that.movingIntervalId != -1) {
@@ -116,8 +113,7 @@ var Obstacle = function(x, y, width, height) {
     }
 }
 
-
-
+var statusElem = document.getElementById("status");
 var mainCanvas = document.getElementById('mainCanvas');
 mainCanvas.width = document.body.clientWidth;
 mainCanvas.height = document.body.clientHeight;
@@ -133,6 +129,8 @@ function Render(ship, obstacles) {
     obstacles.forEach(function(e) {
         e.draw(context);
     })
+
+    statusElem.innerText = "Hits: " + ship.hits + " Passed: " + ship.passed + " (" + Math.floor(ship.hits / (ship.passed + ship.hits) * 100) + "%)";
 }
 
 // Game
@@ -165,7 +163,7 @@ function addMapSliceInternal(obstacles, centerX, x, y) {
 
 function addMapSlice(obstacles, right, y) {
     xLeft = addMapSliceInternal(obstacles, 0, xLeft, y);
-    xLeft = addMapSliceInternal(obstacles, right, xRight, y);
+    xRight = addMapSliceInternal(obstacles, right, xRight, y);
 }
 
 // Game loop
@@ -175,6 +173,13 @@ setInterval(function() {
 
     obstacles.forEach(function(o) {
         o.collision = areColliding(ship, o);
+        if (o.collision) {
+            ship.hits++;
+        }
+        else
+        {
+            ship.passed++;
+        }
         o.move(20);
     })
 
